@@ -1,0 +1,7 @@
+analyzer:
+  errors:
+    invalid_assignment: error
+  exclude:
+    - build/**
+    - android/**
+    - web/**

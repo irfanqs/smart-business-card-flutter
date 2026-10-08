@@ -1,0 +1,10 @@
+project_id = "smart-business-card"
+
+[functions.public-card]
+verify_jwt = false
+
+[functions.account-admin]
+verify_jwt = false
+
+[functions.change-password]
+verify_jwt = false

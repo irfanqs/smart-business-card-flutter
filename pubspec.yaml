@@ -1,0 +1,27 @@
+name: smart_business_card
+description: Kartu nama digital dan pengelolaan relasi profesional.
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.5.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
+  supabase_flutter: ^2.10.0
+  qr_flutter: ^4.1.0
+  mobile_scanner: ^7.0.0
+  image_picker: ^1.1.2
+  share_plus: ^11.0.0
+  url_launcher: ^6.3.2
+  flutter_local_notifications: ^19.1.0
+  timezone: ^0.10.1
+  intl: ^0.20.2
+  app_links: ^6.4.0
+  gal: ^2.3.1
+
+flutter:
+  uses-material-design: true
