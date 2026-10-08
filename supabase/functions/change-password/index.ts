@@ -19,7 +19,13 @@ Deno.serve(async (request) => {
   const { error } = await admin.auth.admin.updateUserById(account.id, {
     password,
   });
-  if (error) return json({ error: "Sandi belum dapat diubah." }, 500);
+  if (error) {
+    // Penolakan validasi dari Auth (sandi lemah/sama) dikembalikan apa adanya.
+    const status = error.status && error.status < 500 ? 400 : 500;
+    return json({
+      error: status === 400 ? error.message : "Sandi belum dapat diubah.",
+    }, status);
+  }
   const { error: flagError } = await admin.from("accounts")
     .update({ must_change_password: false }).eq("id", account.id);
   if (flagError) {

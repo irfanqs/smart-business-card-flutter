@@ -12,6 +12,12 @@ String errorText(Object error) {
   if (error is AuthException) return error.message;
   if (error is PostgrestException) return error.message;
   if (error is StorageException) return error.message;
+  if (error is FunctionException && error.status != 0) {
+    final details = row(error.details);
+    final message = details?['message'] ?? details?['error'];
+    if (message != null) return message.toString();
+  }
+  if (error is StateError) return error.message;
   return 'Terjadi kesalahan. Periksa koneksi internet dan coba lagi.';
 }
 
@@ -55,6 +61,7 @@ class AppStore extends ChangeNotifier {
   List<Map<String, dynamic>> reminders = [];
   int shareCount = 0;
   bool loading = false;
+  int _generation = 0;
 
   String get userId => client.auth.currentUser!.id;
   bool get signedIn => client.auth.currentUser != null;
@@ -62,53 +69,67 @@ class AppStore extends ChangeNotifier {
       account?['status'] == 'active' &&
       account?['must_change_password'] != true;
 
+  /// Hanya hasil refresh terbaru yang disimpan. Refresh yang sudah
+  /// digantikan (mis. karena logout di tengah jalan) dibuang diam-diam.
   Future<void> refresh() async {
-    if (!signedIn) {
+    final generation = ++_generation;
+    final uid = client.auth.currentUser?.id;
+    if (uid == null) {
       account = null;
       card = null;
       relations = [];
       reminders = [];
       shareCount = 0;
+      loading = false;
       notifyListeners();
       return;
     }
     loading = true;
     notifyListeners();
     try {
-      account = row(
-        await client.from('accounts').select().eq('id', userId).single(),
+      final nextAccount = row(
+        await client.from('accounts').select().eq('id', uid).single(),
       );
-      if (account?['role'] == 'user' && usable) {
-        card = row(
-          await client
-              .from('cards')
-              .select()
-              .eq('owner_id', userId)
-              .maybeSingle(),
+      Map<String, dynamic>? nextCard;
+      var nextRelations = <Map<String, dynamic>>[];
+      var nextReminders = <Map<String, dynamic>>[];
+      var nextShareCount = 0;
+      if (nextAccount?['role'] == 'user' &&
+          nextAccount?['status'] == 'active' &&
+          nextAccount?['must_change_password'] != true) {
+        nextCard = row(
+          await client.from('cards').select().eq('owner_id', uid).maybeSingle(),
         );
-        relations = rows(
+        nextRelations = rows(
           await client
               .from('relations')
               .select()
               .order('created_at', ascending: false),
         );
-        reminders = rows(
+        nextReminders = rows(
           await client
               .from('reminders')
               .select()
               .gte('remind_at', DateTime.now().toUtc().toIso8601String())
               .order('remind_at'),
         );
-        shareCount = (await client.from('share_events').select('id')).length;
-      } else {
-        card = null;
-        relations = [];
-        reminders = [];
-        shareCount = 0;
+        nextShareCount =
+            (await client.from('share_events').select('id')).length;
       }
+      if (generation != _generation) return;
+      account = nextAccount;
+      card = nextCard;
+      relations = nextRelations;
+      reminders = nextReminders;
+      shareCount = nextShareCount;
+    } catch (_) {
+      if (generation != _generation) return;
+      rethrow;
     } finally {
-      loading = false;
-      notifyListeners();
+      if (generation == _generation) {
+        loading = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -161,7 +182,7 @@ class AppStore extends ChangeNotifier {
       body: {'token': token},
     );
     final data = row(response.data);
-    if (response.status != 200 || data?['card'] == null) {
+    if (data?['card'] == null) {
       throw StateError(
         data?['message']?.toString() ?? 'Profil tidak tersedia.',
       );
@@ -262,14 +283,10 @@ class AppStore extends ChangeNotifier {
   }
 
   Future<void> changePassword(String password) async {
-    final response = await client.functions.invoke(
+    await client.functions.invoke(
       'change-password',
       body: {'password': password},
     );
-    if (response.status != 200)
-      throw StateError(
-        row(response.data)?['error']?.toString() ?? 'Sandi belum dapat diubah.',
-      );
     await refresh();
   }
 }

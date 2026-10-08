@@ -56,6 +56,11 @@ class ReminderNotifier {
     }
   }
 
+  static Future<void> clear() async {
+    await init();
+    await plugin.cancelAll();
+  }
+
   static Future<void> cancel(String relationId) async {
     await init();
     await plugin.cancel(idFor(relationId));

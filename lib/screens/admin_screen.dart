@@ -29,18 +29,13 @@ class _AdminScreenState extends State<AdminScreen> {
         body: {'action': 'list'},
       );
       final data = row(response.data);
-      if (response.status != 200)
-        throw StateError(
-          data?['error']?.toString() ?? 'Daftar akun gagal dimuat.',
-        );
+      if (!mounted) return;
       setState(() {
         users = rows(data?['users']);
         loaded = true;
       });
     } catch (e) {
-      setState(
-        () => error = e is StateError ? e.message.toString() : errorText(e),
-      );
+      if (mounted) setState(() => error = errorText(e));
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -82,8 +77,6 @@ class _AdminScreenState extends State<AdminScreen> {
         body: {'action': operation, 'userId': user['id']},
       );
       final data = row(response.data);
-      if (response.status != 200)
-        throw StateError(data?['error']?.toString() ?? 'Tindakan gagal.');
       if (isReset && mounted) {
         final password = data?['password']?.toString() ?? '';
         await showDialog<void>(
@@ -121,10 +114,7 @@ class _AdminScreenState extends State<AdminScreen> {
       }
       await load();
     } catch (e) {
-      if (mounted)
-        setState(
-          () => error = e is StateError ? e.message.toString() : errorText(e),
-        );
+      if (mounted) setState(() => error = errorText(e));
     }
   }
 

@@ -56,9 +56,14 @@ class _SmartBusinessCardAppState extends State<SmartBusinessCardApp> {
     try {
       await store!.refresh();
       startupError = null;
-      if (!kIsWeb && store!.usable) {
+      if (!kIsWeb) {
         try {
-          await ReminderNotifier.sync(store!);
+          // Pengingat milik akun lain/nonaktif tidak boleh tetap terjadwal.
+          if (store!.usable) {
+            await ReminderNotifier.sync(store!);
+          } else {
+            await ReminderNotifier.clear();
+          }
         } catch (_) {
           /* Izin notifikasi dapat diatur nanti. */
         }

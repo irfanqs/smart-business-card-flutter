@@ -79,7 +79,7 @@ class HomeTab extends StatelessWidget {
         )
         .length;
     return RefreshIndicator(
-      onRefresh: store.refresh,
+      onRefresh: () => refreshWithFeedback(context, store),
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -385,7 +385,18 @@ class ProfileTab extends StatelessWidget {
           ),
           const SizedBox(height: 18),
           OutlinedButton.icon(
-            onPressed: () => store.client.auth.signOut(),
+            onPressed: () async {
+              try {
+                await ReminderNotifier.clear();
+              } catch (_) {
+                /* Tetap keluar walau notifikasi gagal dibersihkan. */
+              }
+              try {
+                await store.client.auth.signOut();
+              } catch (e) {
+                if (context.mounted) showError(context, e);
+              }
+            },
             icon: const Icon(Icons.logout),
             label: const Text('Keluar dari Akun'),
           ),

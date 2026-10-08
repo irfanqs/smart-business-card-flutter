@@ -30,7 +30,7 @@ class _RelationsTabState extends State<RelationsTab> {
           ('${r['full_name']} ${r['company']}'.toLowerCase().contains(q));
     }).toList();
     return RefreshIndicator(
-      onRefresh: widget.store.refresh,
+      onRefresh: () => refreshWithFeedback(context, widget.store),
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
@@ -611,6 +611,7 @@ class InteractionFormScreen extends StatefulWidget {
 }
 
 class _InteractionFormScreenState extends State<InteractionFormScreen> {
+  bool busy = false;
   late final note = TextEditingController(
     text: widget.initial?['note']?.toString() ?? '',
   );
@@ -670,25 +671,30 @@ class _InteractionFormScreenState extends State<InteractionFormScreen> {
             ),
             const SizedBox(height: 18),
             FilledButton(
-              onPressed: () async {
-                if (note.text.trim().isEmpty) {
-                  showError(context, StateError('Catatan wajib diisi.'));
-                  return;
-                }
-                try {
-                  await widget.store.saveInteraction(
-                    widget.relationId,
-                    at,
-                    note.text,
-                    location.text,
-                    id: widget.initial?['id']?.toString(),
-                  );
-                  if (context.mounted) Navigator.pop(context);
-                } catch (e) {
-                  if (context.mounted) showError(context, e);
-                }
-              },
-              child: const Text('Simpan Catatan'),
+              onPressed: busy
+                  ? null
+                  : () async {
+                      if (note.text.trim().isEmpty) {
+                        showError(context, StateError('Catatan wajib diisi.'));
+                        return;
+                      }
+                      setState(() => busy = true);
+                      try {
+                        await widget.store.saveInteraction(
+                          widget.relationId,
+                          at,
+                          note.text,
+                          location.text,
+                          id: widget.initial?['id']?.toString(),
+                        );
+                        if (context.mounted) Navigator.pop(context);
+                      } catch (e) {
+                        if (context.mounted) showError(context, e);
+                      } finally {
+                        if (mounted) setState(() => busy = false);
+                      }
+                    },
+              child: Text(busy ? 'Menyimpan...' : 'Simpan Catatan'),
             ),
           ],
         ),

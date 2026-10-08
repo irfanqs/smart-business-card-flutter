@@ -16,12 +16,20 @@ void showError(BuildContext context, Object error) =>
       ),
     );
 
+Future<void> refreshWithFeedback(BuildContext context, AppStore store) async {
+  try {
+    await store.refresh();
+  } catch (e) {
+    if (context.mounted) showError(context, e);
+  }
+}
+
 class CardTab extends StatelessWidget {
   const CardTab({super.key, required this.store});
   final AppStore store;
   @override
   Widget build(BuildContext context) => RefreshIndicator(
-        onRefresh: store.refresh,
+        onRefresh: () => refreshWithFeedback(context, store),
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
@@ -168,7 +176,7 @@ class CardPreview extends StatelessWidget {
       );
 }
 
-class ProfilePhoto extends StatelessWidget {
+class ProfilePhoto extends StatefulWidget {
   const ProfilePhoto({
     super.key,
     required this.store,
@@ -181,16 +189,37 @@ class ProfilePhoto extends StatelessWidget {
   final String name;
   final double size;
   @override
+  State<ProfilePhoto> createState() => _ProfilePhotoState();
+}
+
+class _ProfilePhotoState extends State<ProfilePhoto> {
+  Future<String?>? url;
+
+  @override
+  void initState() {
+    super.initState();
+    url = widget.store.photoUrl(widget.path);
+  }
+
+  @override
+  void didUpdateWidget(ProfilePhoto oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.path != widget.path) url = widget.store.photoUrl(widget.path);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (path == null || path!.isEmpty)
+    final path = widget.path;
+    final name = widget.name;
+    if (path == null || path.isEmpty)
       return CircleAvatar(
-        radius: size / 2,
+        radius: widget.size / 2,
         child: Text(name.isEmpty ? '?' : name.substring(0, 1).toUpperCase()),
       );
     return FutureBuilder<String?>(
-      future: store.photoUrl(path),
+      future: url,
       builder: (context, snapshot) => CircleAvatar(
-        radius: size / 2,
+        radius: widget.size / 2,
         backgroundImage:
             snapshot.data == null ? null : NetworkImage(snapshot.data!),
         child: snapshot.data == null ? const Icon(Icons.person_outline) : null,
@@ -241,14 +270,23 @@ class _CardEditorState extends State<CardEditor> {
   }
 
   Future<void> pickPhoto() async {
-    final file = await ImagePicker().pickImage(source: ImageSource.gallery);
-    if (file == null) return;
+    final XFile? file;
+    final Uint8List bytes;
+    try {
+      file = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (file == null) return;
+      bytes = await file.readAsBytes();
+    } catch (e) {
+      if (mounted)
+        showError(context,
+            StateError('Foto tidak dapat dibuka. Periksa izin galeri.'));
+      return;
+    }
+    if (!mounted) return;
     final ext = file.name.split('.').last.toLowerCase();
-    final bytes = await file.readAsBytes();
     if (!['jpg', 'jpeg', 'png'].contains(ext) ||
         bytes.length > 2 * 1024 * 1024) {
-      if (mounted)
-        showError(context, StateError('Pilih foto JPG/PNG maksimal 2 MB.'));
+      showError(context, StateError('Pilih foto JPG/PNG maksimal 2 MB.'));
       return;
     }
     setState(() {

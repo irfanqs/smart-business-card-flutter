@@ -56,7 +56,7 @@ class _AuthScreenState extends State<AuthScreen> {
       await widget.store.refresh();
       widget.onDone();
     } catch (e) {
-      setState(() => error = errorText(e));
+      if (mounted) setState(() => error = errorText(e));
     } finally {
       if (mounted) setState(() => busy = false);
     }
@@ -200,7 +200,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       widget.onDone?.call();
       if (mounted && !widget.requiredChange) Navigator.pop(context);
     } catch (e) {
-      setState(() => error = errorText(e));
+      if (mounted) setState(() => error = errorText(e));
     } finally {
       if (mounted) setState(() => busy = false);
     }
