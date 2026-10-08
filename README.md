@@ -2,13 +2,54 @@
 
 Aplikasi tugas kuliah untuk kartu nama digital dan relasi profesional. Android memakai Flutter; profil publik dan dashboard admin memakai Flutter Web dari kode yang sama. Data disimpan di Supabase. Alur dan cakupan lengkap ada di [PRD.md](PRD.md).
 
-## Yang perlu dipasang di Mac
+## Versi yang dipakai
 
-1. Pasang [Flutter SDK](https://docs.flutter.dev/install) melalui ekstensi Flutter di VS Code atau instalasi manual. **Dart sudah termasuk dalam Flutter SDK.** Tambahkan direktori `flutter/bin` ke `PATH`.
-2. Pasang [Android Studio dan Android SDK](https://docs.flutter.dev/platform-integration/android/setup) untuk menjalankan emulator atau membangun APK. Ponsel Android fisik dapat menggantikan emulator, tetapi Android SDK tetap diperlukan untuk build.
-3. Jalankan `flutter doctor`, lalu selesaikan komponen Android yang diminta. Setelah itu jalankan `flutter pub get` di folder proyek.
+Proyek ini dibangun dan diuji dengan versi berikut. Versi lain yang lebih baru biasanya tetap berjalan, kecuali Java (lihat catatan di bawah tabel).
 
-SDK Flutter Anda berada di `/Users/irfanqobus/Desktop/joki-projek/flutter`. Jika perintah `flutter` belum dikenali di Terminal, tambahkan direktori `/Users/irfanqobus/Desktop/joki-projek/flutter/bin` ke `PATH`.
+| Komponen | Versi | Keterangan |
+|---|---|---|
+| Flutter | 3.47.6 (stable) | Minimal Dart SDK `>=3.5.0 <4.0.0` sesuai `pubspec.yaml` |
+| Dart | 3.13.5 | Sudah termasuk di Flutter SDK |
+| Java (JDK) | **17** | Wajib. Java 25 bawaan Android Studio terbaru tidak cocok dengan Gradle 8.14 |
+| Gradle | 8.14 | `android/gradle/wrapper/gradle-wrapper.properties`, diunduh otomatis |
+| Android Gradle Plugin | 8.11.1 | `android/settings.gradle.kts` |
+| Kotlin | 2.2.20 | `android/settings.gradle.kts` |
+| Android compileSdk / targetSdk | 36 | Bawaan Flutter (`flutter.compileSdkVersion`) |
+| Android minSdk | 24 (Android 7.0) | Bawaan Flutter (`flutter.minSdkVersion`) |
+| Android NDK | 28.2.13676358 | Diunduh otomatis saat build pertama (sekitar 2 GB) |
+| Android build-tools | 36.0.0 | Dipasang lewat Android Studio / SDK Manager |
+
+Paket Flutter utama (versi terkunci di `pubspec.lock`):
+
+| Paket | Versi | Fungsi |
+|---|---|---|
+| `supabase_flutter` | 2.18.0 | Auth, database, storage, Edge Function |
+| `qr_flutter` | 4.1.0 | Membuat gambar QR |
+| `mobile_scanner` | 7.4.2 | Memindai QR dengan kamera |
+| `image_picker` | 1.2.4 | Memilih foto profil |
+| `share_plus` | 11.1.0 | Berbagi tautan kartu |
+| `url_launcher` | 6.3.3 | Membuka email, telepon, LinkedIn |
+| `flutter_local_notifications` | 19.5.0 | Notifikasi pengingat follow-up |
+| `timezone` | 0.10.1 | Jadwal notifikasi |
+| `intl` | 0.20.3 | Format tanggal |
+| `app_links` | 6.4.1 | Deep link `smartcard://save/<token>` |
+| `gal` | 2.3.3 | Menyimpan gambar QR ke galeri |
+
+Backend memakai Supabase (Postgres + Auth + Storage) dan Edge Function berbasis Deno dengan `@supabase/supabase-js@2`.
+
+## Yang perlu dipasang
+
+1. Pasang [Flutter SDK](https://docs.flutter.dev/install) dan tambahkan direktori `flutter/bin` ke `PATH`. **Dart sudah termasuk dalam Flutter SDK.**
+2. Pasang [Android Studio dan Android SDK](https://docs.flutter.dev/platform-integration/android/setup). Ponsel Android fisik dapat menggantikan emulator, tetapi Android SDK tetap diperlukan untuk build.
+3. Pasang JDK 17 dan arahkan Flutter ke JDK tersebut. Contoh di Mac dengan Homebrew:
+
+   ```sh
+   brew install openjdk@17
+   flutter config --jdk-dir="$(brew --prefix openjdk@17)/libexec/openjdk.jdk/Contents/Home"
+   ```
+
+4. Jalankan `flutter doctor` dan pastikan baris Java menunjukkan versi 17. Setelah itu jalankan `flutter pub get` di folder proyek.
+5. Sediakan ruang disk kosong minimal 6–8 GB untuk build Android pertama (Gradle, NDK, dan hasil build).
 
 ## Supabase
 
