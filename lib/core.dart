@@ -2,8 +2,14 @@ import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-const supabaseUrl = String.fromEnvironment('SUPABASE_URL');
-const supabaseKey = String.fromEnvironment('SUPABASE_PUBLISHABLE_KEY');
+const supabaseUrl = String.fromEnvironment(
+  'SUPABASE_URL',
+  defaultValue: 'https://vwdbfmhklsvsyigesfvy.supabase.co',
+);
+const supabaseKey = String.fromEnvironment(
+  'SUPABASE_PUBLISHABLE_KEY',
+  defaultValue: 'sb_publishable_0SQsGsSkWUce3JOrfCMiPg_lnOSv3zu',
+);
 const publicBaseUrl = String.fromEnvironment('PUBLIC_BASE_URL');
 
 const categories = ['Partner', 'Klien', 'Prospek', 'Teman Profesional'];

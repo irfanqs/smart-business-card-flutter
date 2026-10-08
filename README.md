@@ -10,7 +10,11 @@ Aplikasi tugas kuliah untuk kartu nama digital dan relasi profesional. Android m
 
 SDK Flutter Anda berada di `/Users/irfanqobus/Desktop/joki-projek/flutter`. Jika perintah `flutter` belum dikenali di Terminal, tambahkan direktori `/Users/irfanqobus/Desktop/joki-projek/flutter/bin` ke `PATH`.
 
-## Siapkan Supabase Free
+## Supabase
+
+Proyek `vwdbfmhklsvsyigesfvy` sudah terhubung. Migrasi awal, bucket foto, dan ketiga Edge Function sudah dipasang. URL serta publishable key (kunci publik untuk aplikasi klien) sudah menjadi nilai bawaan di `lib/core.dart`; `--dart-define` tetap dapat dipakai untuk mengganti proyek saat pengembangan.
+
+Untuk proyek Supabase lain, lakukan langkah berikut:
 
 1. Buat proyek baru di [Supabase](https://supabase.com/dashboard). Salin **Project URL** dan **publishable/anon key** dari Project Settings → API. Jangan masukkan `service_role`/secret key ke aplikasi atau repo.
 2. Di Authentication → Providers → Email, nonaktifkan konfirmasi email agar pendaftaran bisa langsung masuk sesuai PRD.
@@ -36,14 +40,12 @@ SDK Flutter Anda berada di `/Users/irfanqobus/Desktop/joki-projek/flutter`. Jika
 
 ## Jalankan aplikasi
 
-Isi nilai berikut dengan proyek Anda. `PUBLIC_BASE_URL` adalah alamat **Flutter Web yang sudah di-host**, misalnya `https://kartu-saya.pages.dev`. Nilai ini dipakai untuk membentuk tautan QR.
+`PUBLIC_BASE_URL` adalah alamat **Flutter Web yang sudah di-host**, misalnya `https://kartu-saya.pages.dev`. Nilai ini dipakai untuk membentuk tautan QR. Tanpa nilai tersebut, login dan penyimpanan data tetap berfungsi, tetapi tautan berbagi belum bisa dibuat.
 
 Lihat ID perangkat dengan `flutter devices`, lalu jalankan:
 
 ```sh
 flutter run -d ID_PERANGKAT_ANDROID \
-  --dart-define=SUPABASE_URL=https://REF_PROYEK.supabase.co \
-  --dart-define=SUPABASE_PUBLISHABLE_KEY=KUNCI_PUBLIK \
   --dart-define=PUBLIC_BASE_URL=https://kartu-saya.pages.dev
 ```
 
@@ -51,8 +53,6 @@ Untuk APK demonstrasi:
 
 ```sh
 flutter build apk --release \
-  --dart-define=SUPABASE_URL=https://REF_PROYEK.supabase.co \
-  --dart-define=SUPABASE_PUBLISHABLE_KEY=KUNCI_PUBLIK \
   --dart-define=PUBLIC_BASE_URL=https://kartu-saya.pages.dev
 ```
 
@@ -60,12 +60,10 @@ Hasilnya berada di `build/app/outputs/flutter-apk/app-release.apk`. APK dapat di
 
 ## Profil publik dan dashboard admin di browser
 
-Build Flutter Web dengan tiga `--dart-define` yang sama:
+Build Flutter Web dengan `PUBLIC_BASE_URL` yang sama:
 
 ```sh
 flutter build web --release \
-  --dart-define=SUPABASE_URL=https://REF_PROYEK.supabase.co \
-  --dart-define=SUPABASE_PUBLISHABLE_KEY=KUNCI_PUBLIK \
   --dart-define=PUBLIC_BASE_URL=https://kartu-saya.pages.dev
 ```
 
