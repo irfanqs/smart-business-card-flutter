@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../core.dart';
+import '../theme.dart';
 import 'auth_screen.dart';
 
 class AdminScreen extends StatefulWidget {
@@ -161,26 +162,7 @@ class _AdminScreenState extends State<AdminScreen> {
               .toList();
           final active = users.where((u) => u['status'] == 'active').length;
           return Scaffold(
-            appBar: AppBar(
-              title: const Text('Smart Business Card • Admin'),
-              actions: [
-                IconButton(
-                  tooltip: 'Ubah sandi',
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => ChangePasswordScreen(store: widget.store),
-                    ),
-                  ),
-                  icon: const Icon(Icons.lock_outline),
-                ),
-                IconButton(
-                  tooltip: 'Keluar',
-                  onPressed: () => widget.store.client.auth.signOut(),
-                  icon: const Icon(Icons.logout),
-                ),
-              ],
-            ),
+            appBar: AdminNavBar(store: widget.store),
             body: Center(
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1100),
@@ -311,6 +293,132 @@ class _Stat extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      );
+}
+
+class AdminNavBar extends StatelessWidget implements PreferredSizeWidget {
+  const AdminNavBar({super.key, required this.store});
+  final AppStore store;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(68);
+
+  @override
+  Widget build(BuildContext context) {
+    final wide = MediaQuery.sizeOf(context).width >= 720;
+    final email = store.account?['email']?.toString() ?? '';
+    return Material(
+      color: Colors.white,
+      child: Container(
+        decoration: const BoxDecoration(
+          border: Border(bottom: BorderSide(color: AppColors.surfaceTint)),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 1100),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.gradient,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.contact_page_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Text(
+                        'Smart Business Card',
+                        overflow: TextOverflow.ellipsis,
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.neutral,
+                                ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.surfaceTint,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: const Text(
+                        'Admin',
+                        style: TextStyle(
+                          color: AppColors.primary,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const Spacer(),
+                    if (wide && email.isNotEmpty) ...[
+                      const Icon(
+                        Icons.account_circle_outlined,
+                        size: 20,
+                        color: Colors.black54,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(email,
+                          style: const TextStyle(color: Colors.black54)),
+                      const SizedBox(width: 16),
+                    ],
+                    wide
+                        ? TextButton.icon(
+                            onPressed: () => _changePassword(context),
+                            icon: const Icon(Icons.lock_outline, size: 18),
+                            label: const Text('Ubah Sandi'),
+                          )
+                        : IconButton(
+                            tooltip: 'Ubah sandi',
+                            onPressed: () => _changePassword(context),
+                            icon: const Icon(Icons.lock_outline),
+                          ),
+                    const SizedBox(width: 8),
+                    wide
+                        ? OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              minimumSize: const Size(0, 40),
+                            ),
+                            onPressed: () => store.client.auth.signOut(),
+                            icon: const Icon(Icons.logout, size: 18),
+                            label: const Text('Keluar'),
+                          )
+                        : IconButton(
+                            tooltip: 'Keluar',
+                            onPressed: () => store.client.auth.signOut(),
+                            icon: const Icon(Icons.logout),
+                          ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _changePassword(BuildContext context) => Navigator.push(
+        context,
+        MaterialPageRoute<void>(
+          builder: (_) => ChangePasswordScreen(store: store),
         ),
       );
 }

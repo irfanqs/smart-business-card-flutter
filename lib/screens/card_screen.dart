@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../core.dart';
 import '../gallery_save.dart';
+import '../theme.dart';
 
 void showError(BuildContext context, Object error) =>
     ScaffoldMessenger.of(context).showSnackBar(
@@ -112,68 +113,94 @@ class CardPreview extends StatelessWidget {
   final AppStore store;
   final Map<String, dynamic> data;
   @override
-  Widget build(BuildContext context) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  ProfilePhoto(
-                    store: store,
-                    path: data['photo_path']?.toString(),
-                    name: data['full_name']?.toString() ?? '',
-                    size: 62,
+  Widget build(BuildContext context) {
+    const muted = TextStyle(color: Colors.white70);
+    final details = [
+      for (final key in ['public_email', 'phone', 'linkedin'])
+        if ((data[key]?.toString() ?? '').isNotEmpty) data[key].toString(),
+    ];
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppColors.gradient,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.secondary.withValues(alpha: 0.25),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(18),
+      child: DefaultTextStyle.merge(
+        style: const TextStyle(color: Colors.white),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                ProfilePhoto(
+                  store: store,
+                  path: data['photo_path']?.toString(),
+                  name: data['full_name']?.toString() ?? '',
+                  size: 62,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        data['full_name']?.toString() ?? '',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
+                      Text(
+                        [data['job_title'], data['company']]
+                            .where((e) => e != null && e.toString().isNotEmpty)
+                            .join(' • '),
+                      ),
+                      Text(
+                        [data['industry'], data['city']]
+                            .where((e) => e != null && e.toString().isNotEmpty)
+                            .join(' • '),
+                        style: muted,
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          data['full_name']?.toString() ?? '',
-                          style: Theme.of(context).textTheme.titleLarge,
-                        ),
-                        Text(
-                          [data['job_title'], data['company']]
-                              .where(
-                                  (e) => e != null && e.toString().isNotEmpty)
-                              .join(' • '),
-                        ),
-                        Text(
-                          [data['industry'], data['city']]
-                              .where(
-                                  (e) => e != null && e.toString().isNotEmpty)
-                              .join(' • '),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const Divider(height: 28),
-              for (final key in ['public_email', 'phone', 'linkedin'])
-                if ((data[key]?.toString() ?? '').isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Text(data[key].toString()),
-                  ),
-              if ((data['bio']?.toString() ?? '').isNotEmpty)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color:
-                        Theme.of(context).colorScheme.surfaceContainerHighest,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text('“${data['bio']}”'),
+                ),
+              ],
+            ),
+            if (details.isNotEmpty) ...[
+              const Divider(height: 28, color: Colors.white24),
+              for (final detail in details)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(detail),
                 ),
             ],
-          ),
+            if ((data['bio']?.toString() ?? '').isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.14),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '“${data['bio']}”',
+                  style: const TextStyle(fontStyle: FontStyle.italic),
+                ),
+              ),
+            ],
+          ],
         ),
-      );
+      ),
+    );
+  }
 }
 
 class ProfilePhoto extends StatefulWidget {

@@ -64,15 +64,9 @@ class _AuthScreenState extends State<AuthScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.admin
-                ? 'Masuk Admin'
-                : register
-                    ? 'Daftar Akun'
-                    : 'Masuk',
-          ),
-        ),
+        appBar: widget.admin
+            ? null
+            : AppBar(title: Text(register ? 'Daftar Akun' : 'Masuk')),
         body: Center(
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 420),
@@ -92,6 +86,16 @@ class _AuthScreenState extends State<AuthScreen> {
                     style: Theme.of(context).textTheme.headlineMedium,
                     textAlign: TextAlign.center,
                   ),
+                  if (widget.admin) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      'Dashboard Admin',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                    ),
+                  ],
                   const SizedBox(height: 28),
                   TextField(
                     controller: email,

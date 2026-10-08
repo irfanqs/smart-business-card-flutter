@@ -11,6 +11,7 @@ import 'screens/admin_screen.dart';
 import 'screens/auth_screen.dart';
 import 'screens/public_screen.dart';
 import 'screens/shell_screen.dart';
+import 'theme.dart';
 import 'web_url_strategy.dart';
 
 Future<void> main() async {
@@ -102,12 +103,7 @@ class _SmartBusinessCardAppState extends State<SmartBusinessCardApp> {
       title: 'Smart Business Card',
       navigatorKey: navKey,
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF15665B)),
-        scaffoldBackgroundColor: const Color(0xFFF6F7F5),
-        appBarTheme: const AppBarTheme(backgroundColor: Color(0xFFF6F7F5)),
-      ),
+      theme: appTheme(),
       home: _home(),
     );
   }
