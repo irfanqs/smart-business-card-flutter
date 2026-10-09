@@ -1,4 +1,4 @@
-# Product Requirements Document — Smart Business Card
+# Product Requirements Document — SmartLink Business Card
 
 **Status:** Draf untuk ditinjau  
 **Tanggal:** 6 Oktober 2026  
@@ -8,7 +8,7 @@
 
 ## 1. Ringkasan produk
 
-Smart Business Card membantu profesional individu membuat satu kartu nama digital, membagikannya melalui QR atau tautan, lalu menyimpan dan mengelola relasi profesional. Profil yang dibagikan dapat dibuka di browser tanpa akun. Pengguna aplikasi dapat menyimpan salinan kontak, menempatkannya dalam satu kategori, menulis banyak catatan interaksi, dan memasang satu pengingat tindak lanjut aktif per relasi. Admin mempunyai dashboard sederhana untuk membantu pengelolaan akun dan kata sandi.
+SmartLink Business Card membantu profesional individu membuat satu kartu nama digital, membagikannya melalui QR atau tautan, lalu menyimpan dan mengelola relasi profesional. Profil yang dibagikan dapat dibuka di browser tanpa akun. Pengguna aplikasi dapat menyimpan salinan kontak, menempatkannya dalam satu kategori, menulis banyak catatan interaksi, dan memasang satu pengingat tindak lanjut aktif per relasi. Admin mempunyai dashboard sederhana untuk membantu pengelolaan akun dan kata sandi.
 
 Proyek ini dibuat untuk tugas perkuliahan. Keberhasilan utamanya adalah alur dari pembuatan kartu sampai pengelolaan relasi dapat didemonstrasikan dengan data sungguhan, menggunakan layanan gratis dan antarmuka yang mengikuti wireframe.
 

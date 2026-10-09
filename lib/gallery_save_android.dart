@@ -7,6 +7,6 @@ class GallerySave {
     if (!await Gal.hasAccess(toAlbum: true)) {
       await Gal.requestAccess(toAlbum: true);
     }
-    await Gal.putImageBytes(bytes, album: 'Smart Business Card');
+    await Gal.putImageBytes(bytes, album: 'SmartLink Business Card');
   }
 }

@@ -5,6 +5,8 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../core.dart';
 import '../reminder_notifier.dart';
+import '../theme.dart';
+import '../ui.dart';
 import 'card_screen.dart';
 import 'public_screen.dart';
 
@@ -21,124 +23,422 @@ class RelationsTab extends StatefulWidget {
 }
 
 class _RelationsTabState extends State<RelationsTab> {
-  String search = '', filter = 'Semua';
+  static const sorts = ['Terbaru Ditambahkan', 'Nama A–Z'];
+  String search = '', filter = 'Semua', sort = sorts.first;
+
+  void open(Widget screen) => Navigator.push(
+        context,
+        MaterialPageRoute<void>(builder: (_) => screen),
+      );
+
   @override
   Widget build(BuildContext context) {
-    final items = widget.store.relations.where((r) {
+    final all = widget.store.relations;
+    final items = all.where((r) {
       final q = search.toLowerCase();
       return (filter == 'Semua' || r['category'] == filter) &&
-          ('${r['full_name']} ${r['company']}'.toLowerCase().contains(q));
+          ('${r['full_name']} ${r['company']} ${r['job_title']}'
+              .toLowerCase()
+              .contains(q));
     }).toList();
-    return RefreshIndicator(
+    if (sort == sorts.last) {
+      items.sort(
+        (a, b) => (a['full_name']?.toString() ?? '')
+            .toLowerCase()
+            .compareTo((b['full_name']?.toString() ?? '').toLowerCase()),
+      );
+    } else {
+      items.sort(
+        (a, b) => (b['created_at']?.toString() ?? '')
+            .compareTo(a['created_at']?.toString() ?? ''),
+      );
+    }
+    int count(String option) => option == 'Semua'
+        ? all.length
+        : all.where((r) => r['category'] == option).length;
+    return TabPage(
+      header: TabHeader(
+        title: 'Relasi',
+        name: widget.store.card?['full_name']?.toString(),
+      ),
       onRefresh: () => refreshWithFeedback(context, widget.store),
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text('Relasi', style: Theme.of(context).textTheme.headlineSmall),
-          Text('Daftar Relasi', style: Theme.of(context).textTheme.titleLarge),
-          Text('${widget.store.relations.length} kontak tersimpan'),
-          const SizedBox(height: 14),
-          TextField(
-            onChanged: (v) => setState(() => search = v),
-            decoration: const InputDecoration(
-              prefixIcon: Icon(Icons.search),
-              hintText: 'Cari nama atau perusahaan...',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          const SizedBox(height: 12),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                for (final option in ['Semua', ...categories])
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: ChoiceChip(
-                      label: Text(option),
-                      selected: filter == option,
-                      onSelected: (_) => setState(() => filter = option),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: FilledButton.icon(
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => RelationFormScreen(store: widget.store),
-                    ),
-                  ),
-                  icon: const Icon(Icons.person_add_alt_1),
-                  label: const Text('Tambah Kontak'),
+      children: [
+        Row(
+          children: [
+            const Expanded(
+              child: Text(
+                'Daftar Relasi',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: -0.3,
+                  color: AppColors.textPrimary,
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => Navigator.push(
-                    context,
-                    MaterialPageRoute<void>(
-                      builder: (_) => ScannerScreen(store: widget.store),
+            ),
+            StatusBadge(
+              '${all.length} Kontak Tersimpan',
+              color: AppColors.primary,
+              background: const Color(0xFFE2E7FF),
+              border: const Color(0x66B8C4FF),
+              fontSize: 12,
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        const Text(
+          'Manajemen Personal Relationship Management (PRM) & Pertemuan',
+          style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+        ),
+        const SizedBox(height: 14),
+        TextField(
+          onChanged: (v) => setState(() => search = v),
+          style: const TextStyle(fontSize: 13),
+          decoration: const InputDecoration(
+            prefixIcon: Icon(Icons.search, color: AppColors.secondary),
+            hintText: 'Cari nama, perusahaan, atau jabatan...',
+            hintStyle: TextStyle(
+              fontSize: 12,
+              fontStyle: FontStyle.italic,
+              color: AppColors.textTertiary,
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          clipBehavior: Clip.none,
+          child: Row(
+            children: [
+              for (final option in ['Semua', ...categories])
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Material(
+                    color: filter == option
+                        ? AppColors.primary
+                        : const Color(0xFFEAEDFF),
+                    shape: const StadiumBorder(),
+                    elevation: filter == option ? 2 : 0,
+                    shadowColor: AppColors.primary.withValues(alpha: 0.3),
+                    child: InkWell(
+                      customBorder: const StadiumBorder(),
+                      onTap: () => setState(() => filter = option),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 7,
+                        ),
+                        child: Text(
+                          '$option (${count(option)})',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: filter == option
+                                ? FontWeight.w600
+                                : FontWeight.w500,
+                            color: filter == option
+                                ? Colors.white
+                                : const Color(0xFF444653),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                  icon: const Icon(Icons.qr_code_scanner),
-                  label: const Text('Pindai QR'),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            FilledButton.icon(
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(0, 36),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                textStyle: const TextStyle(
+                  fontFamily: 'PlusJakartaSans',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              onPressed: () => open(RelationFormScreen(store: widget.store)),
+              icon: const Icon(Icons.person_add_alt_1, size: 16),
+              label: const Text('Tambah'),
+            ),
+            const SizedBox(width: 8),
+            OutlinedButton.icon(
+              style: tintedButton().copyWith(
+                minimumSize: const WidgetStatePropertyAll(Size(0, 36)),
+                padding: const WidgetStatePropertyAll(
+                  EdgeInsets.symmetric(horizontal: 12),
+                ),
+                textStyle: const WidgetStatePropertyAll(
+                  TextStyle(
+                    fontFamily: 'PlusJakartaSans',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              onPressed: () => open(ScannerScreen(store: widget.store)),
+              icon: const Icon(Icons.qr_code_scanner, size: 16),
+              label: const Text('Pindai QR'),
+            ),
+            const Spacer(),
+            PopupMenuButton<String>(
+              initialValue: sort,
+              onSelected: (v) => setState(() => sort = v),
+              itemBuilder: (_) => [
+                for (final s in sorts) PopupMenuItem(value: s, child: Text(s)),
+              ],
+              child: Container(
+                height: 36,
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.outline),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 96),
+                      child: Text(
+                        sort,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
+                    const Icon(
+                      Icons.expand_more,
+                      size: 18,
+                      color: AppColors.textSecondary,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+        if (items.isEmpty)
+          const SurfaceCard(
+            padding: EdgeInsets.all(24),
+            child: Text(
+              'Tidak ada relasi yang cocok. Tambahkan kontak atau ubah pencarian.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: AppColors.textSecondary),
+            ),
+          ),
+        for (final relation in items)
+          _RelationCard(
+            store: widget.store,
+            relation: relation,
+            onOpen: open,
+          ),
+        if (all.isNotEmpty)
+          const InfoNote(
+            'Data relasi disimpan terpisah dari kontak telepon. Kontak tidak berubah walau pemilik kartu mengubah kartunya.',
+            title: 'Penyimpanan PRM Terproteksi',
+            icon: Icons.shield_outlined,
+            boxed: true,
+          ),
+      ],
+    );
+  }
+}
+
+class _RelationCard extends StatelessWidget {
+  const _RelationCard({
+    required this.store,
+    required this.relation,
+    required this.onOpen,
+  });
+  final AppStore store;
+  final Map<String, dynamic> relation;
+  final ValueChanged<Widget> onOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final reminder = store.reminders
+        .where((e) => e['relation_id'] == relation['id'])
+        .firstOrNull;
+    final detail = RelationDetailScreen(store: store, relation: relation);
+    return SurfaceCard(
+      radius: 12,
+      padding: const EdgeInsets.all(14),
+      borderColor: const Color(0xFFE2E7FF),
+      onTap: () => onOpen(detail),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              InitialsAvatar(name: relation['full_name']?.toString()),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        Text(
+                          relation['full_name']?.toString() ?? '',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                        if (relation['category'] != null)
+                          StatusBadge.category(
+                            relation['category'].toString(),
+                          ),
+                      ],
+                    ),
+                    if (hasText(joinParts(
+                      [relation['job_title'], relation['company']],
+                    )))
+                      Text(
+                        joinParts([relation['job_title'], relation['company']]),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF444653),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
-          if (items.isEmpty)
-            const Card(
-              child: Padding(
-                padding: EdgeInsets.all(24),
-                child: Text(
-                  'Tidak ada relasi yang cocok. Tambahkan kontak atau ubah pencarian.',
+          if (reminder != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(10),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF2F3FF),
+                borderRadius: BorderRadius.horizontal(
+                  right: Radius.circular(8),
+                ),
+                border: Border(
+                  left: BorderSide(color: AppColors.secondary, width: 2),
                 ),
               ),
-            ),
-          for (final relation in items)
-            Card(
-              child: ListTile(
-                leading: CircleAvatar(
-                  child: Text(
-                    (relation['full_name']?.toString() ?? '?')
-                        .substring(0, 1)
-                        .toUpperCase(),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.alarm,
+                    size: 14,
+                    color: AppColors.secondary,
                   ),
-                ),
-                title: Text(relation['full_name']?.toString() ?? ''),
-                subtitle: Text(
-                  [
-                    relation['job_title'],
-                    relation['company'],
-                    relation['category'],
-                  ]
-                      .where((e) => e != null && e.toString().isNotEmpty)
-                      .join(' • '),
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute<void>(
-                    builder: (_) => RelationDetailScreen(
-                      store: widget.store,
-                      relation: relation,
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Follow-up ${dateLabel(DateTime.parse(reminder['remind_at'].toString()))}',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF444653),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
+          ],
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Icon(Icons.history, size: 12, color: Color(0xFF757684)),
+              const SizedBox(width: 4),
+              Expanded(
+                child: Text(
+                  dateOnly(relation['created_at']),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Color(0xFF757684),
+                  ),
+                ),
+              ),
+              if (hasText(relation['phone']))
+                _QuickAction(
+                  icon: Icons.call_outlined,
+                  tooltip: 'Telepon',
+                  onTap: () => launchUrl(
+                    Uri(scheme: 'tel', path: relation['phone'].toString()),
+                  ),
+                ),
+              if (hasText(relation['email']))
+                _QuickAction(
+                  icon: Icons.mail_outline,
+                  tooltip: 'Email',
+                  onTap: () => launchUrl(
+                    Uri(scheme: 'mailto', path: relation['email'].toString()),
+                  ),
+                ),
+              _QuickAction(
+                icon: Icons.arrow_forward,
+                tooltip: 'Detail',
+                filled: true,
+                onTap: () => onOpen(detail),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
+}
+
+String dateOnly(dynamic value) {
+  final date = DateTime.tryParse(value?.toString() ?? '');
+  return date == null ? '-' : DateFormat('dd/MM/yyyy').format(date.toLocal());
+}
+
+class _QuickAction extends StatelessWidget {
+  const _QuickAction({
+    required this.icon,
+    required this.tooltip,
+    required this.onTap,
+    this.filled = false,
+  });
+  final IconData icon;
+  final String tooltip;
+  final VoidCallback onTap;
+  final bool filled;
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.only(left: 6),
+        child: Material(
+          color: filled ? AppColors.primary : const Color(0xFFEAEDFF),
+          borderRadius: BorderRadius.circular(8),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(8),
+            onTap: onTap,
+            child: Tooltip(
+              message: tooltip,
+              child: SizedBox(
+                width: 36,
+                height: 36,
+                child: Icon(
+                  icon,
+                  size: 18,
+                  color: filled ? Colors.white : AppColors.primary,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
 }
 
 class ScannerScreen extends StatefulWidget {
@@ -189,9 +489,19 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 },
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text('Arahkan kamera ke QR Smart Business Card.'),
+            Container(
+              width: double.infinity,
+              color: Colors.white,
+              padding: const EdgeInsets.all(20),
+              child: const Row(
+                children: [
+                  IconBox(Icons.qr_code_scanner),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text('Arahkan kamera ke QR $appName.'),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -215,16 +525,28 @@ class RelationFormScreen extends StatefulWidget {
 class _RelationFormScreenState extends State<RelationFormScreen> {
   final form = GlobalKey<FormState>();
   final fields = <String, TextEditingController>{};
+  final place = TextEditingController();
+  final note = TextEditingController();
+  DateTime metAt = DateTime.now();
   String? category;
   bool busy = false;
-  final labels = const {
-    'full_name': 'Nama Lengkap *',
+  static const labels = {
+    'full_name': 'Nama Lengkap',
     'job_title': 'Jabatan',
     'company': 'Perusahaan',
     'email': 'Email',
     'phone': 'Nomor Telepon',
     'linkedin': 'LinkedIn URL',
   };
+  static const icons = {
+    'email': Icons.mail_outline,
+    'phone': Icons.call_outlined,
+    'linkedin': Icons.link,
+  };
+
+  bool get creating => widget.initial?['id'] == null;
+  bool get fromCard => widget.sourceToken != null;
+
   @override
   void initState() {
     super.initState();
@@ -240,11 +562,20 @@ class _RelationFormScreenState extends State<RelationFormScreen> {
     for (final c in fields.values) {
       c.dispose();
     }
+    place.dispose();
+    note.dispose();
     super.dispose();
   }
 
   Future<void> save() async {
     if (!form.currentState!.validate()) return;
+    if (creating && place.text.trim().isNotEmpty && note.text.trim().isEmpty) {
+      showError(
+        context,
+        StateError('Isi catatan pribadi untuk menyimpan lokasi pertemuan.'),
+      );
+      return;
+    }
     setState(() => busy = true);
     try {
       if (widget.sourceToken != null)
@@ -254,11 +585,23 @@ class _RelationFormScreenState extends State<RelationFormScreen> {
         'category': category,
         'source_owner_id': widget.initial?['source_owner_id'],
       };
-      await widget.store.saveRelation(
+      final saved = await widget.store.saveRelation(
         data,
         id: widget.initial?['id']?.toString(),
       );
-      if (mounted) Navigator.pop(context);
+      if (creating && note.text.trim().isNotEmpty)
+        await widget.store.saveInteraction(
+          saved['id'].toString(),
+          metAt,
+          note.text,
+          place.text,
+        );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Relasi berhasil disimpan!')),
+        );
+        Navigator.pop(context);
+      }
     } catch (e) {
       if (mounted) showError(context, e);
     } finally {
@@ -266,38 +609,193 @@ class _RelationFormScreenState extends State<RelationFormScreen> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) => Scaffold(
-        appBar: AppBar(
-          title: Text(
-            widget.initial?['id'] == null
-                ? 'Simpan sebagai Relasi'
-                : 'Edit Relasi',
+  Widget _summary() => SurfaceCard(
+        borderColor: AppColors.outlineSoft,
+        shadow: const [
+          BoxShadow(
+            color: Color(0x0A0F172A),
+            blurRadius: 16,
+            offset: Offset(0, 4),
           ),
-        ),
-        bottomNavigationBar: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: FilledButton(
-              onPressed: busy ? null : save,
-              child: Text(busy ? 'Menyimpan...' : 'Simpan Relasi'),
+        ],
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(4),
+              decoration: const BoxDecoration(
+                color: AppColors.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: InitialsAvatar(
+                name: fields['full_name']!.text,
+                size: 52,
+                status: AppColors.successDot,
+              ),
             ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          fields['full_name']!.text,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      const Icon(
+                        Icons.verified_outlined,
+                        size: 16,
+                        color: AppColors.secondary,
+                      ),
+                    ],
+                  ),
+                  if (hasText(joinParts([
+                    fields['job_title']!.text,
+                    fields['company']!.text,
+                  ])))
+                    Text(
+                      joinParts(
+                        [fields['job_title']!.text, fields['company']!.text],
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  if (hasText(fields['email']!.text))
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.mail_outline,
+                            size: 14,
+                            color: AppColors.secondary,
+                          ),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              fields['email']!.text,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                                color: AppColors.secondary,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+
+  Widget _categoryOption(String c) {
+    final selected = category == c;
+    return Material(
+      color: selected
+          ? AppColors.primaryContainer.withValues(alpha: 0.6)
+          : Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: selected ? AppColors.secondary : AppColors.outline,
+          width: 2,
+        ),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () => setState(() => category = selected ? null : c),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            children: [
+              Container(
+                width: 20,
+                height: 20,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: selected ? AppColors.secondary : Colors.transparent,
+                  border: Border.all(
+                    color: selected
+                        ? AppColors.secondary
+                        : const Color(0xFFCBD5E1),
+                    width: 2,
+                  ),
+                ),
+                child: selected
+                    ? Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  c,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: selected ? FontWeight.w700 : FontWeight.w600,
+                    color:
+                        selected ? const Color(0xFF1E3A8A) : AppColors.textBody,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-        body: Form(
-          key: form,
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              for (final e in labels.entries)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 14),
-                  child: TextFormField(
+      ),
+    );
+  }
+
+  Widget _contactFields() => Column(
+        children: [
+          for (final e in labels.entries)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  FieldLabel(e.value, required: e.key == 'full_name'),
+                  TextFormField(
                     controller: fields[e.key],
-                    decoration: InputDecoration(
-                      labelText: e.value,
-                      border: const OutlineInputBorder(),
+                    keyboardType: e.key == 'email'
+                        ? TextInputType.emailAddress
+                        : e.key == 'phone'
+                            ? TextInputType.phone
+                            : TextInputType.text,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
                     ),
+                    decoration: InputDecoration(
+                      prefixIcon: icons[e.key] == null
+                          ? null
+                          : Icon(icons[e.key], size: 20),
+                    ),
+                    onChanged: (_) => setState(() {}),
                     validator: (v) {
                       if (e.key == 'full_name' && (v?.trim().isEmpty ?? true))
                         return 'Nama wajib diisi';
@@ -307,27 +805,225 @@ class _RelationFormScreenState extends State<RelationFormScreen> {
                       return null;
                     },
                   ),
-                ),
-              DropdownButtonFormField<String>(
-                initialValue: category,
-                decoration: const InputDecoration(
-                  labelText: 'Kategori / Nama Grup',
-                  border: OutlineInputBorder(),
-                ),
-                items: [
-                  const DropdownMenuItem<String>(
-                    value: '',
-                    child: Text('Belum dipilih'),
-                  ),
-                  for (final c in categories)
-                    DropdownMenuItem(value: c, child: Text(c)),
                 ],
-                onChanged: (v) => setState(() => category = v == '' ? null : v),
               ),
-            ],
-          ),
-        ),
+            ),
+        ],
       );
+
+  @override
+  Widget build(BuildContext context) {
+    final tonalInput = InputDecoration(
+      filled: true,
+      fillColor: AppColors.canvas,
+      hintStyle: const TextStyle(fontSize: 12, color: AppColors.textTertiary),
+    );
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(creating ? 'Simpan sebagai Relasi' : 'Edit Relasi'),
+      ),
+      body: Form(
+        key: form,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Row(
+              children: [
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                    foregroundColor: const Color(0xFF475569),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.chevron_left, size: 22),
+                  label: const Text(
+                    'Batal',
+                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                  ),
+                ),
+                const Spacer(),
+                StatusBadge(
+                  fromCard ? 'DARI KARTU SMARTLINK' : 'KONTAK MANUAL',
+                  color: AppColors.textSecondary,
+                  background: AppColors.tonal,
+                  border: null,
+                  radius: 6,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (fromCard) _summary(),
+            SurfaceCard(
+              borderColor: AppColors.outlineSoft,
+              shadow: const [
+                BoxShadow(
+                  color: Color(0x0A0F172A),
+                  blurRadius: 16,
+                  offset: Offset(0, 4),
+                ),
+              ],
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const FieldLabel(
+                    'Kategori / Nama Grup',
+                    trailing: 'Pilih salah satu',
+                  ),
+                  const SizedBox(height: 4),
+                  for (var i = 0; i < categories.length; i += 2) ...[
+                    if (i > 0) const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(child: _categoryOption(categories[i])),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: i + 1 < categories.length
+                              ? _categoryOption(categories[i + 1])
+                              : const SizedBox(),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 18),
+                  if (fromCard)
+                    Theme(
+                      data: Theme.of(context)
+                          .copyWith(dividerColor: Colors.transparent),
+                      child: ExpansionTile(
+                        tilePadding: EdgeInsets.zero,
+                        childrenPadding: const EdgeInsets.only(top: 6),
+                        leading: const Icon(
+                          Icons.contact_page_outlined,
+                          size: 18,
+                          color: AppColors.secondary,
+                        ),
+                        title: const Text(
+                          'Ubah Data Kontak',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textBody,
+                          ),
+                        ),
+                        children: [_contactFields()],
+                      ),
+                    )
+                  else
+                    _contactFields(),
+                  if (creating) ...[
+                    const SizedBox(height: 4),
+                    const FieldLabel(
+                      'Tanggal & Lokasi Pertemuan',
+                      icon: Icons.calendar_month_outlined,
+                    ),
+                    Row(
+                      children: [
+                        Material(
+                          color: AppColors.canvas,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            side: const BorderSide(color: AppColors.outline),
+                          ),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () async {
+                              final d = await showDatePicker(
+                                context: context,
+                                initialDate: metAt,
+                                firstDate: DateTime(2000),
+                                lastDate: DateTime.now(),
+                              );
+                              if (d != null)
+                                setState(
+                                  () => metAt = DateTime(
+                                    d.year,
+                                    d.month,
+                                    d.day,
+                                    metAt.hour,
+                                    metAt.minute,
+                                  ),
+                                );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 14,
+                              ),
+                              child: Text(
+                                DateFormat('dd/MM/yyyy').format(metAt),
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.textPrimary,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: TextField(
+                            controller: place,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            decoration: tonalInput.copyWith(
+                              hintText: 'cth: Tech Conference Jakarta',
+                              prefixIcon: const Icon(
+                                Icons.pin_drop_outlined,
+                                size: 20,
+                                color: AppColors.secondary,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    const FieldLabel(
+                      'Catatan Pribadi',
+                      icon: Icons.lock_outline,
+                      trailing: 'Hanya Anda yang melihat',
+                    ),
+                    TextField(
+                      controller: note,
+                      maxLines: 3,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        height: 1.6,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      decoration: tonalInput.copyWith(
+                        hintText:
+                            'cth: Diskusi potensi kolaborasi, follow up minggu depan.',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                  const InfoNote(
+                    'Kontak akan tersimpan di database SmartLink PRM tanpa mengubah kontak buku telepon bawaan perangkat.',
+                    title: 'Penyimpanan Aman & Terpisah',
+                    icon: Icons.verified_user_outlined,
+                    boxed: true,
+                  ),
+                  const SizedBox(height: 4),
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size(0, 52),
+                    ),
+                    onPressed: busy ? null : save,
+                    icon: const Icon(Icons.bookmark_add_outlined, size: 20),
+                    label: Text(busy ? 'Menyimpan...' : 'Simpan Relasi'),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class RelationDetailScreen extends StatefulWidget {
@@ -419,51 +1115,67 @@ class _RelationDetailScreenState extends State<RelationDetailScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    r['full_name']?.toString() ?? '',
-                    style: Theme.of(context).textTheme.titleLarge,
+          SurfaceCard(
+            padding: const EdgeInsets.all(20),
+            child: Row(
+              children: [
+                InitialsAvatar(name: r['full_name']?.toString(), size: 60),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        r['full_name']?.toString() ?? '',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      Text(
+                        joinParts([r['job_title'], r['company']]),
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      if (r['category'] != null) ...[
+                        const SizedBox(height: 8),
+                        StatusBadge.category(r['category'].toString()),
+                      ],
+                    ],
                   ),
-                  Text(
-                    [r['job_title'], r['company']]
-                        .where((e) => e != null && e.toString().isNotEmpty)
-                        .join(' • '),
-                  ),
-                  if (r['category'] != null)
-                    Chip(label: Text(r['category'].toString())),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-          if ((r['phone']?.toString() ?? '').isNotEmpty)
-            ListTile(
-              leading: const Icon(Icons.call),
-              title: Text(r['phone'].toString()),
-              onTap: () =>
-                  launchUrl(Uri(scheme: 'tel', path: r['phone'].toString())),
-            ),
+          if (joinParts([r['phone'], r['email'], r['linkedin']]).isNotEmpty)
+            const SectionLabel('Informasi Kontak & Tautan'),
           if ((r['email']?.toString() ?? '').isNotEmpty)
-            ListTile(
-              leading: const Icon(Icons.mail),
-              title: Text(r['email'].toString()),
+            ContactRow(
+              icon: Icons.mail_outline,
+              label: 'Alamat Surel',
+              value: r['email'].toString(),
+              action: 'Kirim Email',
               onTap: () =>
                   launchUrl(Uri(scheme: 'mailto', path: r['email'].toString())),
             ),
+          if ((r['phone']?.toString() ?? '').isNotEmpty)
+            ContactRow(
+              icon: Icons.call_outlined,
+              label: 'Nomor Telepon',
+              value: r['phone'].toString(),
+              action: 'Hubungi',
+              onTap: () =>
+                  launchUrl(Uri(scheme: 'tel', path: r['phone'].toString())),
+            ),
           if ((r['linkedin']?.toString() ?? '').isNotEmpty)
-            ListTile(
-              leading: const Icon(Icons.link),
-              title: Text(r['linkedin'].toString()),
+            ContactRow(
+              icon: Icons.badge_outlined,
+              label: 'LinkedIn',
+              value: r['linkedin'].toString(),
+              action: 'Buka Profil',
+              actionIcon: Icons.open_in_new,
               onTap: () => launchUrl(
                 Uri.parse(r['linkedin'].toString()),
                 mode: LaunchMode.externalApplication,
               ),
             ),
-          const Divider(),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -505,8 +1217,11 @@ class _RelationDetailScreenState extends State<RelationDetailScreen> {
               return Column(
                 children: [
                   for (final note in snapshot.data!)
-                    Card(
+                    SurfaceCard(
+                      padding: const EdgeInsets.symmetric(vertical: 4),
+                      radius: 12,
                       child: ListTile(
+                        leading: const IconBox(Icons.sticky_note_2_outlined),
                         title: Text(note['note']?.toString() ?? ''),
                         subtitle: Text(
                           '${dateLabel(DateTime.parse(note['happened_at'].toString()))}${(note['location']?.toString() ?? '').isEmpty ? '' : ' • ${note['location']}'}',
@@ -572,10 +1287,38 @@ class _RelationDetailScreenState extends State<RelationDetailScreen> {
               ),
             ],
           ),
-          Text(
-            reminder == null
-                ? 'Belum ada pengingat.'
-                : dateLabel(DateTime.parse(reminder['remind_at'].toString())),
+          SurfaceCard(
+            radius: 12,
+            child: Row(
+              children: [
+                IconBox(
+                  Icons.alarm,
+                  color: reminder == null
+                      ? AppColors.textSecondary
+                      : AppColors.error,
+                  background: reminder == null
+                      ? AppColors.tonal
+                      : AppColors.errorContainer,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    reminder == null
+                        ? 'Belum ada pengingat.'
+                        : dateLabel(
+                            DateTime.parse(reminder['remind_at'].toString()),
+                          ),
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                ),
+                if (reminder != null)
+                  const StatusBadge(
+                    'Follow-up',
+                    color: AppColors.error,
+                    background: AppColors.errorContainer,
+                  ),
+              ],
+            ),
           ),
           if (reminder != null)
             TextButton(
@@ -657,7 +1400,6 @@ class _InteractionFormScreenState extends State<InteractionFormScreen> {
               controller: location,
               decoration: const InputDecoration(
                 labelText: 'Lokasi (opsional)',
-                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 14),
@@ -666,7 +1408,6 @@ class _InteractionFormScreenState extends State<InteractionFormScreen> {
               maxLines: 5,
               decoration: const InputDecoration(
                 labelText: 'Catatan Pribadi *',
-                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 18),

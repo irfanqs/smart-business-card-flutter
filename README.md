@@ -1,4 +1,4 @@
-# Smart Business Card
+# SmartLink Business Card
 
 Aplikasi tugas kuliah untuk kartu nama digital dan relasi profesional. Android memakai Flutter; profil publik dan dashboard admin memakai Flutter Web dari kode yang sama. Data disimpan di Supabase. Alur dan cakupan lengkap ada di [PRD.md](PRD.md).
 

@@ -20,16 +20,16 @@ Future<void> main() async {
   if (supabaseUrl.isNotEmpty && supabaseKey.isNotEmpty) {
     await Supabase.initialize(url: supabaseUrl, publishableKey: supabaseKey);
   }
-  runApp(const SmartBusinessCardApp());
+  runApp(const SmartLinkApp());
 }
 
-class SmartBusinessCardApp extends StatefulWidget {
-  const SmartBusinessCardApp({super.key});
+class SmartLinkApp extends StatefulWidget {
+  const SmartLinkApp({super.key});
   @override
-  State<SmartBusinessCardApp> createState() => _SmartBusinessCardAppState();
+  State<SmartLinkApp> createState() => _SmartLinkAppState();
 }
 
-class _SmartBusinessCardAppState extends State<SmartBusinessCardApp> {
+class _SmartLinkAppState extends State<SmartLinkApp> {
   final navKey = GlobalKey<NavigatorState>();
   AppStore? store;
   StreamSubscription<AuthState>? authSubscription;
@@ -100,7 +100,7 @@ class _SmartBusinessCardAppState extends State<SmartBusinessCardApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Smart Business Card',
+      title: appName,
       navigatorKey: navKey,
       debugShowCheckedModeBanner: false,
       theme: appTheme(),

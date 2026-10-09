@@ -191,7 +191,6 @@ class _AdminScreenState extends State<AdminScreen> {
                       decoration: const InputDecoration(
                         prefixIcon: Icon(Icons.search),
                         hintText: 'Cari email pengguna',
-                        border: OutlineInputBorder(),
                       ),
                     ),
                     if (error != null)
@@ -331,7 +330,7 @@ class AdminNavBar extends StatelessWidget implements PreferredSizeWidget {
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: const Icon(
-                        Icons.contact_page_rounded,
+                        Icons.contactless,
                         color: Colors.white,
                         size: 20,
                       ),
@@ -339,7 +338,7 @@ class AdminNavBar extends StatelessWidget implements PreferredSizeWidget {
                     const SizedBox(width: 12),
                     Flexible(
                       child: Text(
-                        'Smart Business Card',
+                        appName,
                         overflow: TextOverflow.ellipsis,
                         style:
                             Theme.of(context).textTheme.titleMedium?.copyWith(
