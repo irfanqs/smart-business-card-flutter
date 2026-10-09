@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core.dart';
+import '../theme.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({
@@ -75,34 +76,50 @@ class _AuthScreenState extends State<AuthScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Icon(
-                    Icons.contact_page_rounded,
-                    size: 54,
-                    color: Theme.of(context).colorScheme.primary,
+                  Center(
+                    child: Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.gradient,
+                        borderRadius: BorderRadius.circular(18),
+                        boxShadow: AppShadows.level3,
+                      ),
+                      child: const Icon(
+                        Icons.contactless,
+                        size: 34,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 20),
                   Text(
-                    'Smart Business Card',
-                    style: Theme.of(context).textTheme.headlineMedium,
+                    appName,
+                    style: Theme.of(context).textTheme.headlineLarge,
                     textAlign: TextAlign.center,
                   ),
-                  if (widget.admin) ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      'Dashboard Admin',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                    ),
-                  ],
+                  const SizedBox(height: 6),
+                  Text(
+                    widget.admin
+                        ? 'Dashboard Admin'
+                        : register
+                            ? 'Buat akun untuk membuat kartu digital Anda'
+                            : 'Masuk untuk mengelola kartu & relasi Anda',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: widget.admin
+                              ? AppColors.primary
+                              : AppColors.textSecondary,
+                        ),
+                  ),
                   const SizedBox(height: 28),
                   TextField(
                     controller: email,
                     keyboardType: TextInputType.emailAddress,
                     decoration: const InputDecoration(
                       labelText: 'Email',
-                      border: OutlineInputBorder(),
+                      hintText: 'nama@domain.id',
+                      prefixIcon: Icon(Icons.mail_outline),
                     ),
                   ),
                   const SizedBox(height: 14),
@@ -111,7 +128,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     obscureText: true,
                     decoration: const InputDecoration(
                       labelText: 'Kata sandi',
-                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.lock_outline),
                     ),
                   ),
                   if (error != null)
@@ -232,7 +249,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   obscureText: true,
                   decoration: const InputDecoration(
                     labelText: 'Sandi baru',
-                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.lock_outline),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -241,7 +258,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                   obscureText: true,
                   decoration: const InputDecoration(
                     labelText: 'Ulangi sandi baru',
-                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.lock_reset),
                   ),
                 ),
                 if (error != null)

@@ -1,4 +1,4 @@
-# Smart Business Card
+# SmartLink Business Card
 
 Kosakata produk untuk aplikasi kartu nama digital dan pengelolaan relasi profesional individu.
 
@@ -6,7 +6,7 @@ Kosakata produk untuk aplikasi kartu nama digital dan pengelolaan relasi profesi
 
 **Kartu Digital**:
 Identitas profesional yang dibuat pemilik akun untuk dibagikan kepada orang lain melalui QR atau tautan.
-_Avoid_: Smart Business Card, kartu bisnis
+_Avoid_: kartu bisnis
 
 **Pemilik Kartu**:
 Pengguna yang membuat dan dapat mengubah satu kartu digital miliknya.
