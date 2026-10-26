@@ -223,14 +223,14 @@ Navigasi utama Android memakai empat tab pada wireframe: **Beranda, Kartu Saya, 
 ## 11. Rancangan teknis dan batas layanan
 
 - **Android:** Flutter/Dart untuk semua layar utama, kamera QR, berbagi melalui Android, dan notifikasi lokal.
-- **Browser:** build Flutter Web dari codebase yang sama untuk profil publik dan dashboard admin. Build statis dihosting pada Cloudflare Pages Free.
+- **Browser:** build Flutter Web dari codebase yang sama untuk profil publik dan dashboard admin. Build statis dihosting pada Netlify Free.
 - **Cloud:** Supabase Free untuk autentikasi email dan kata sandi, database, serta penyimpanan foto. Validasi token 24 jam, visibilitas, peran admin, dan status akun dilakukan pada akses data; data pribadi dilindungi kebijakan akses per pemilik.
 - **Operasi admin:** fungsi server Supabase Edge Function memverifikasi sesi dan peran admin sebelum memanggil API administratif dengan kunci rahasia server. Fungsi kecil ini memakai TypeScript sesuai runtime Supabase; seluruh antarmuka Android dan browser tetap Flutter/Dart. Kunci itu tidak dikirim ke Flutter Android/Web. Paket Free mencakup kuota Edge Function untuk cakupan tugas kuliah.
 - **Email:** pendaftaran tanpa verifikasi; tidak ada email pemulihan atau pengirim SMTP proyek. Pengguna mengubah kata sandi dari sesi yang sedang masuk, sedangkan pemulihan setelah keluar dibantu admin.
 - **Koneksi:** operasi data membutuhkan internet. Proyek Supabase Free dapat dijeda setelah satu minggu tidak aktif; aktifkan kembali dan periksa akun demo sebelum presentasi.
 - **Biaya:** desain penggunaan memakai paket gratis. Pemakaian perlu tetap berada dalam kuota layanan tersebut.
 
-Rujukan layanan: [Flutter Web](https://docs.flutter.dev/platform-integration/web/building), [Supabase untuk Flutter](https://supabase.com/docs/guides/getting-started/quickstarts/flutter), [Supabase Free](https://supabase.com/pricing), [Cloudflare Pages Free](https://developers.cloudflare.com/pages/platform/limits/), [API admin Supabase](https://supabase.com/docs/reference/javascript/auth-admin-updateuserbyid), [runtime Edge Function](https://supabase.com/docs/guides/functions), [kuota Edge Function](https://supabase.com/docs/guides/functions/pricing/).
+Rujukan layanan: [Flutter Web](https://docs.flutter.dev/platform-integration/web/building), [Supabase untuk Flutter](https://supabase.com/docs/guides/getting-started/quickstarts/flutter), [Supabase Free](https://supabase.com/pricing), [Netlify Free](https://www.netlify.com/pricing/), [API admin Supabase](https://supabase.com/docs/reference/javascript/auth-admin-updateuserbyid), [runtime Edge Function](https://supabase.com/docs/guides/functions), [kuota Edge Function](https://supabase.com/docs/guides/functions/pricing/).
 
 ## 12. Kriteria penerimaan
 

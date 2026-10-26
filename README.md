@@ -81,20 +81,40 @@ Untuk proyek Supabase lain, lakukan langkah berikut:
 
 ## Jalankan aplikasi
 
-`PUBLIC_BASE_URL` adalah alamat **Flutter Web yang sudah di-host**, misalnya `https://kartu-saya.pages.dev`. Nilai ini dipakai untuk membentuk tautan QR. Tanpa nilai tersebut, login dan penyimpanan data tetap berfungsi, tetapi tautan berbagi belum bisa dibuat.
+Tidak ada berkas `.env` yang perlu dibagikan. URL Supabase dan publishable key sudah menjadi nilai bawaan di `lib/core.dart`.
 
-Lihat ID perangkat dengan `flutter devices`, lalu jalankan:
+`PUBLIC_BASE_URL` adalah alamat Flutter Web yang sudah di-host: `https://smart-business-card.netlify.app`. Nilai ini dipakai untuk membentuk tautan QR. Tanpa nilai tersebut, login dan penyimpanan data tetap berfungsi, tetapi tautan berbagi belum bisa dibuat.
 
-```sh
-flutter run -d ID_PERANGKAT_ANDROID \
-  --dart-define=PUBLIC_BASE_URL=https://kartu-saya.pages.dev
-```
+Perintah di bawah ditulis satu baris agar bisa langsung ditempel di Terminal Mac/Linux, Command Prompt, maupun PowerShell. Jangan memecahnya dengan `\` di PowerShell karena akan muncul galat `MissingExpressionAfterOperator`; di PowerShell, pemisah baris adalah backtick `` ` ``.
+
+1. Unduh paket (sekali setelah clone/pull):
+
+   ```sh
+   flutter pub get
+   ```
+
+2. Lihat ID perangkat atau emulator Android:
+
+   ```sh
+   flutter devices
+   ```
+
+3. Jalankan di Android (ganti `ID_PERANGKAT_ANDROID` dengan ID dari langkah 2; `-d` boleh dihapus jika hanya ada satu perangkat):
+
+   ```sh
+   flutter run -d ID_PERANGKAT_ANDROID --dart-define=PUBLIC_BASE_URL=https://smart-business-card.netlify.app
+   ```
+
+4. Atau jalankan versi web di Chrome untuk mencoba profil publik dan dashboard admin:
+
+   ```sh
+   flutter run -d chrome --dart-define=PUBLIC_BASE_URL=https://smart-business-card.netlify.app
+   ```
 
 Untuk APK demonstrasi:
 
 ```sh
-flutter build apk --release \
-  --dart-define=PUBLIC_BASE_URL=https://kartu-saya.pages.dev
+flutter build apk --release --dart-define=PUBLIC_BASE_URL=https://smart-business-card.netlify.app
 ```
 
 Hasilnya berada di `build/app/outputs/flutter-apk/app-release.apk`. APK dapat dibagikan kepada peserta demonstrasi secara langsung.
@@ -104,11 +124,16 @@ Hasilnya berada di `build/app/outputs/flutter-apk/app-release.apk`. APK dapat di
 Build Flutter Web dengan `PUBLIC_BASE_URL` yang sama:
 
 ```sh
-flutter build web --release \
-  --dart-define=PUBLIC_BASE_URL=https://kartu-saya.pages.dev
+flutter build web --release --dart-define=PUBLIC_BASE_URL=https://smart-business-card.netlify.app
 ```
 
-Unggah isi `build/web` sebagai situs statis pada [Cloudflare Pages Direct Upload](https://developers.cloudflare.com/pages/get-started/direct-upload/). Berkas `web/_redirects` memastikan alamat `/p/<token>` dan `/admin` diarahkan ke Flutter Web. Alamat root juga membuka login admin. Setelah mendapat domain Pages, pakai domain itu sebagai `PUBLIC_BASE_URL` dan build ulang Android serta Web.
+Situs dihosting di Netlify. Untuk memperbarui situs yang sudah ada, buka [app.netlify.com](https://app.netlify.com), pilih situs `smart-business-card`, masuk ke tab **Deploys**, lalu seret folder `build/web` ke area unggah. Jangan unggah ulang lewat Netlify Drop karena itu membuat situs baru dengan alamat lain. Alternatif lewat CLI:
+
+```sh
+npx netlify-cli deploy --prod --dir build/web
+```
+
+Berkas `web/_redirects` memastikan alamat `/p/<token>` dan `/admin` diarahkan ke Flutter Web. Alamat root juga membuka login admin. Jika alamat situs berubah, pakai alamat baru itu sebagai `PUBLIC_BASE_URL` lalu build ulang Android serta Web. Setelah deploy, muat ulang browser dengan Ctrl+Shift+R agar versi lama dari cache tidak tampil.
 
 ## Catatan penggunaan
 
