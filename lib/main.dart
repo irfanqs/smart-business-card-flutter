@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -106,6 +107,10 @@ class _SmartLinkAppState extends State<SmartLinkApp> {
       navigatorKey: navKey,
       debugShowCheckedModeBanner: false,
       theme: appTheme(),
+      // Web: baris chip horizontal juga bisa digeser dengan mouse.
+      scrollBehavior: const MaterialScrollBehavior().copyWith(
+        dragDevices: PointerDeviceKind.values.toSet(),
+      ),
       builder: kIsWeb && !_adminView ? _phoneFrame : null,
       home: _home(),
     );
@@ -127,6 +132,7 @@ class _SmartLinkAppState extends State<SmartLinkApp> {
         alignment: Alignment.topCenter,
         child: Container(
           width: width,
+          clipBehavior: Clip.hardEdge,
           decoration: const BoxDecoration(boxShadow: AppShadows.level2),
           child: MediaQuery(
             data: media.copyWith(size: Size(width, media.size.height)),
