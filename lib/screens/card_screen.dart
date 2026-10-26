@@ -1,8 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
 
 import '../core.dart';
 import '../gallery_save.dart';
@@ -1123,8 +1123,8 @@ class _ShareScreenState extends State<ShareScreen> {
   Future<void> action(String kind) async {
     try {
       if (kind == 'copy') await Clipboard.setData(ClipboardData(text: url!));
-      if (kind == 'share')
-        await SharePlus.instance.share(ShareParams(text: url!));
+      var shared = true;
+      if (kind == 'share') shared = await shareOrCopy(url!);
       if (kind == 'download') {
         final bytes = await QrPainter(
           data: url!,
@@ -1141,8 +1141,12 @@ class _ShareScreenState extends State<ShareScreen> {
               kind == 'copy'
                   ? 'Tautan profil berhasil disalin ke papan klip!'
                   : kind == 'download'
-                      ? 'QR tersimpan di galeri.'
-                      : 'Menu berbagi dibuka.',
+                      ? kIsWeb
+                          ? 'QR diunduh sebagai gambar.'
+                          : 'QR tersimpan di galeri.'
+                      : shared
+                          ? 'Menu berbagi dibuka.'
+                          : 'Browser tidak mendukung berbagi. Tautan disalin ke papan klip.',
             ),
           ),
         );

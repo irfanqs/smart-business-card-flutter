@@ -2,7 +2,7 @@
 
 **Status:** Draf untuk ditinjau  
 **Tanggal:** 6 Oktober 2026  
-**Platform:** Android untuk pengguna; browser untuk profil publik dan dashboard admin  
+**Platform:** Android dan browser untuk pengguna; browser untuk profil publik dan dashboard admin  
 **Bahasa antarmuka:** Indonesia  
 **Acuan:** delapan wireframe yang diberikan, diagram aktivitas dan use case sebagai penjelas alur, serta keputusan pada [ADR 0001](docs/adr/0001-wireframe-menentukan-cakupan.md), [ADR 0002](docs/adr/0002-qr-berbagi-berlaku-24-jam.md), [ADR 0003](docs/adr/0003-layanan-gratis-dan-pemulihan-akun.md), dan [ADR 0004](docs/adr/0004-dashboard-admin.md).
 
@@ -19,7 +19,7 @@ Proyek ini dibuat untuk tugas perkuliahan. Keberhasilan utamanya adalah alur dar
 1. Pengguna dapat mendaftar, masuk, membuat kartu, mengeditnya, dan memilih apakah kartu bisa dilihat publik.
 2. QR dan tautan yang dibuat pada halaman berbagi dapat membuka profil terbaru selama 24 jam.
 3. Pengunjung tanpa akun dapat membaca profil publik melalui browser.
-4. Pengguna Android dapat menyimpan kontak dari QR atau memasukkannya manual, lalu mencari, mengelompokkan, dan mengelolanya.
+4. Pengguna Android maupun web dapat menyimpan kontak dari QR atau memasukkannya manual, lalu mencari, mengelompokkan, dan mengelolanya.
 5. Pengguna dapat mencatat beberapa interaksi dan menerima notifikasi lokal untuk tindak lanjut.
 6. Kartu dan relasi tersedia kembali ketika pengguna masuk pada perangkat Android lain dengan akun yang sama.
 7. Admin dapat membantu pengguna yang kehilangan akses akun tanpa perlu melihat kata sandi lama.
@@ -38,7 +38,7 @@ Satu demonstrasi selesai bila dua akun Android dapat dibuat; akun A membuat dan 
 
 **Dalam cakupan:** delapan layar inti wireframe; layar pendukung untuk daftar/masuk, pengaturan akun dan ubah kata sandi, kamera pemindai QR, tambah kontak manual, detail relasi dengan linimasa, pengingat, daftar pengingat, bantuan singkat, tentang aplikasi, serta dashboard admin sederhana. Layar pendukung hanya memuat fungsi yang dibutuhkan oleh alur yang sudah disetujui.
 
-**Di luar cakupan:** pemindaian foto kartu fisik/OCR, NFC, lencana verifikasi, beberapa kartu per akun, kolaborasi dua arah antarrelasi, pengingat melalui server, pendaftaran atau pengelolaan relasi pengguna di web, pemulihan kata sandi secara mandiri saat keluar dari akun, pembuatan/penghapusan akun melalui admin, operasi data saat offline, dan publikasi ke Play Store.
+**Di luar cakupan:** pemindaian foto kartu fisik/OCR, NFC, lencana verifikasi, beberapa kartu per akun, kolaborasi dua arah antarrelasi, pengingat melalui server, notifikasi pengingat di web, pemulihan kata sandi secara mandiri saat keluar dari akun, pembuatan/penghapusan akun melalui admin, operasi data saat offline, dan publikasi ke Play Store.
 
 ## 4. Prinsip dan asumsi produk
 
@@ -72,7 +72,7 @@ Satu demonstrasi selesai bila dua akun Android dapat dibuat; akun A membuat dan 
 | Dashboard Admin | Tambahan yang diminta setelah wireframe | Melihat ringkasan jumlah akun, mencari akun, melihat status, dan membuka tindakan akun. |
 | Dialog Tindakan Admin | Pendukung dashboard | Mengonfirmasi status akun atau menampilkan sandi sementara sekali setelah reset. |
 
-Navigasi utama Android memakai empat tab pada wireframe: **Beranda, Kartu Saya, Relasi, Profil**. Halaman edit, berbagi, pemindaian, dan detail dibuka dari tab terkait. Pengunjung browser mendapat profil publik dan keadaan gagal yang relevan; admin yang masuk melalui browser mendapat dashboard tersendiri. Akun pengguna biasa tidak dapat membuka dashboard admin.
+Navigasi utama pengguna memakai empat tab pada wireframe: **Beranda, Kartu Saya, Relasi, Profil**. Halaman edit, berbagi, pemindaian, dan detail dibuka dari tab terkait. Di browser, tampilan pengguna sama dengan Android dan dibatasi selebar ponsel. Pengunjung browser mendapat profil publik dan keadaan gagal yang relevan; admin yang masuk melalui browser (alamat `/admin` atau login biasa dengan akun admin) mendapat dashboard tersendiri dengan lebar penuh. Akun pengguna biasa tidak dapat membuka dashboard admin.
 
 ## 6. Alur pengguna
 
@@ -89,7 +89,7 @@ Navigasi utama Android memakai empat tab pada wireframe: **Beranda, Kartu Saya, 
 2. Salin Tautan, Bagikan Pesan, dan Unduh Gambar memakai tautan/QR yang sedang tampil. Membuka halaman ini kembali menghasilkan tautan baru; tautan lama tetap berlaku sampai masa berlakunya selesai.
 3. Penerima memindai QR melalui kamera umum atau aplikasi. Profil terbuka di browser tanpa login selama tautan berlaku dan visibilitas kartu aktif.
 4. Profil mengambil data kartu terbaru ketika dibuka. Jika pemilik mematikan visibilitas, semua tautan langsung menampilkan keadaan profil tidak tersedia.
-5. Tombol Simpan ke Relasi membuka aplikasi Android. Jika belum terpasang, browser menampilkan petunjuk instalasi. Jika belum masuk, aplikasi meminta login lalu melanjutkan penyimpanan selama tautan masih berlaku.
+5. Tombol Simpan ke Relasi langsung menyimpan dari aplikasi Android atau browser. Jika belum masuk, layar meminta login atau pendaftaran lalu melanjutkan penyimpanan selama tautan masih berlaku.
 
 ### 6.3 Menyimpan dan mengelola relasi
 
@@ -223,7 +223,7 @@ Navigasi utama Android memakai empat tab pada wireframe: **Beranda, Kartu Saya, 
 ## 11. Rancangan teknis dan batas layanan
 
 - **Android:** Flutter/Dart untuk semua layar utama, kamera QR, berbagi melalui Android, dan notifikasi lokal.
-- **Browser:** build Flutter Web dari codebase yang sama untuk profil publik dan dashboard admin. Build statis dihosting pada Netlify Free.
+- **Browser:** build Flutter Web dari codebase yang sama untuk profil publik, dashboard pengguna, dan dashboard admin. Di web, Bagikan memakai Web Share API (atau menyalin tautan bila tidak didukung), Unduh Gambar mengunduh berkas PNG, pemindai QR memakai kamera browser, dan pengingat tersimpan tanpa notifikasi. Build statis dihosting pada Netlify Free.
 - **Cloud:** Supabase Free untuk autentikasi email dan kata sandi, database, serta penyimpanan foto. Validasi token 24 jam, visibilitas, peran admin, dan status akun dilakukan pada akses data; data pribadi dilindungi kebijakan akses per pemilik.
 - **Operasi admin:** fungsi server Supabase Edge Function memverifikasi sesi dan peran admin sebelum memanggil API administratif dengan kunci rahasia server. Fungsi kecil ini memakai TypeScript sesuai runtime Supabase; seluruh antarmuka Android dan browser tetap Flutter/Dart. Kunci itu tidak dikirim ke Flutter Android/Web. Paket Free mencakup kuota Edge Function untuk cakupan tugas kuliah.
 - **Email:** pendaftaran tanpa verifikasi; tidak ada email pemulihan atau pengirim SMTP proyek. Pengguna mengubah kata sandi dari sesi yang sedang masuk, sedangkan pemulihan setelah keluar dibantu admin.
@@ -238,7 +238,7 @@ Rujukan layanan: [Flutter Web](https://docs.flutter.dev/platform-integration/web
 2. **Kartu:** pengguna baru dapat menyimpan kartu hanya dengan nama; data, foto, dan pratinjau yang disimpan tampil sama di Beranda, Kartu Saya, dan profil publik.
 3. **QR:** dua kali membuka halaman berbagi menghasilkan QR berbeda. Keduanya membuka profil selama masing-masing 24 jam; setelah kedaluwarsa, hanya pesan kedaluwarsa tampil.
 4. **Visibilitas:** ketika kartu disembunyikan, browser tidak menampilkan data melalui tautan yang sebelumnya aktif; saat diaktifkan lagi, tautan yang belum kedaluwarsa berfungsi.
-5. **Profil tanpa aplikasi:** QR dibuka di browser Android tanpa login; tombol Simpan ke Relasi meminta aplikasi dan login bila diperlukan.
+5. **Profil tanpa aplikasi:** QR dibuka di browser Android tanpa login; tombol Simpan ke Relasi meminta login bila diperlukan, lalu menyimpan dari browser atau aplikasi.
 6. **Salinan:** perubahan kartu sumber terlihat pada profil publik tetapi tidak mengubah salinan relasi yang sudah disimpan atau catatan pribadi.
 7. **Relasi:** pengguna dapat menambah kontak manual, menyimpan dari QR, mencari, memfilter, mengedit, dan menghapusnya. Pemindaian ulang tidak membuat duplikat.
 8. **Catatan:** satu relasi dapat mempunyai beberapa entri bertanggal yang dapat diedit dan dihapus, urut dari terbaru.

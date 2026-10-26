@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -1516,8 +1517,10 @@ class _ReminderFormScreenState extends State<ReminderFormScreen> {
               },
               child: const Text('Simpan Pengingat'),
             ),
-            const Text(
-              'Notifikasi dijadwalkan pada perangkat Android ini. Jika izin notifikasi belum diberikan, aktifkan melalui pengaturan perangkat.',
+            Text(
+              kIsWeb
+                  ? 'Versi web tidak mengirim notifikasi. Pengingat tetap tersimpan dan tampil di Beranda serta detail relasi.'
+                  : 'Notifikasi dijadwalkan pada perangkat Android ini. Jika izin notifikasi belum diberikan, aktifkan melalui pengaturan perangkat.',
             ),
           ],
         ),

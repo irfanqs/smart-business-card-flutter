@@ -31,6 +31,8 @@ class SmartLinkApp extends StatefulWidget {
 
 class _SmartLinkAppState extends State<SmartLinkApp> {
   final navKey = GlobalKey<NavigatorState>();
+  // Dibaca sekali saat mulai; Navigator web mengganti URL ke "/" setelah frame pertama.
+  final startPath = Uri.base.pathSegments.where((e) => e.isNotEmpty).toList();
   AppStore? store;
   StreamSubscription<AuthState>? authSubscription;
   StreamSubscription<Uri>? linkSubscription;
@@ -104,7 +106,34 @@ class _SmartLinkAppState extends State<SmartLinkApp> {
       navigatorKey: navKey,
       debugShowCheckedModeBanner: false,
       theme: appTheme(),
+      builder: kIsWeb && !_adminView ? _phoneFrame : null,
       home: _home(),
+    );
+  }
+
+  // Dashboard admin memakai lebar penuh; tampilan pengguna di web tetap seukuran ponsel.
+  bool get _adminView {
+    final first = startPath.firstOrNull;
+    if (first == 'p') return false;
+    return first == 'admin' || store?.account?['role'] == 'admin';
+  }
+
+  Widget _phoneFrame(BuildContext context, Widget? child) {
+    final media = MediaQuery.of(context);
+    final width = media.size.width.clamp(0.0, 480.0);
+    return ColoredBox(
+      color: AppColors.tonal,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: Container(
+          width: width,
+          decoration: const BoxDecoration(boxShadow: AppShadows.level2),
+          child: MediaQuery(
+            data: media.copyWith(size: Size(width, media.size.height)),
+            child: child!,
+          ),
+        ),
+      ),
     );
   }
 
@@ -112,9 +141,8 @@ class _SmartLinkAppState extends State<SmartLinkApp> {
     if (store == null) return const ConfigScreen();
     if (!ready)
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    final parts = Uri.base.pathSegments.where((e) => e.isNotEmpty).toList();
-    if (kIsWeb && parts.length == 2 && parts[0] == 'p') {
-      return PublicScreen(store: store!, token: parts[1]);
+    if (kIsWeb && startPath.length == 2 && startPath[0] == 'p') {
+      return PublicScreen(store: store!, token: startPath[1]);
     }
     if (startupError != null) {
       return Scaffold(
@@ -135,7 +163,7 @@ class _SmartLinkAppState extends State<SmartLinkApp> {
         ),
       );
     }
-    if (kIsWeb) return AdminScreen(store: store!);
+    if (kIsWeb && _adminView) return AdminScreen(store: store!);
     if (!store!.signedIn) return AuthScreen(store: store!, onDone: refresh);
     if (store!.account?['status'] == 'disabled') {
       return Scaffold(

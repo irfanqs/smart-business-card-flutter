@@ -1,5 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 
 import 'theme.dart';
 
@@ -7,6 +10,19 @@ import 'theme.dart';
 String joinParts(Iterable<dynamic> parts, [String separator = ' • ']) => parts
     .where((e) => e != null && e.toString().trim().isNotEmpty)
     .join(separator);
+
+/// Buka menu berbagi. Browser tanpa Web Share API menyalin tautan sebagai gantinya.
+/// Mengembalikan false bila tautan disalin.
+Future<bool> shareOrCopy(String text) async {
+  try {
+    final result = await SharePlus.instance.share(ShareParams(text: text));
+    if (result.status != ShareResultStatus.unavailable) return true;
+  } catch (_) {
+    if (!kIsWeb) rethrow;
+  }
+  await Clipboard.setData(ClipboardData(text: text));
+  return false;
+}
 
 bool hasText(dynamic value) => (value?.toString().trim() ?? '').isNotEmpty;
 

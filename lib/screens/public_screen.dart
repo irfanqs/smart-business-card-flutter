@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../core.dart';
@@ -31,24 +30,6 @@ class _PublicScreenState extends State<PublicScreen> {
   }
 
   Future<void> save(Map<String, dynamic> card) async {
-    if (kIsWeb) {
-      final uri = Uri(
-        scheme: 'smartcard',
-        host: 'save',
-        path: '/${widget.token}',
-      );
-      if (!await launchUrl(uri, mode: LaunchMode.externalApplication) &&
-          mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'Pasang APK $appName, lalu buka tautan ini kembali.',
-            ),
-          ),
-        );
-      }
-      return;
-    }
     if (!widget.store.signedIn) {
       await Navigator.push(
         context,
@@ -563,10 +544,10 @@ class _PublicScreenState extends State<PublicScreen> {
                       icon: Icons.qr_code_scanner,
                       boxed: true,
                     ),
-                    if (kIsWeb)
+                    if (kIsWeb && !widget.store.signedIn)
                       const InfoNote(
-                        'Untuk menyimpan relasi, pasang APK $appName di Android. Profil ini tetap bisa dilihat tanpa akun.',
-                        icon: Icons.android,
+                        'Profil ini bisa dilihat tanpa akun. Untuk menyimpannya sebagai relasi, masuk atau daftar akun $appName.',
+                        icon: Icons.person_outline,
                         boxed: true,
                       ),
                     const SizedBox(height: 4),
@@ -579,11 +560,30 @@ class _PublicScreenState extends State<PublicScreen> {
                       const SizedBox(height: 8),
                       OutlinedButton.icon(
                         style: tintedButton(),
-                        onPressed: () => SharePlus.instance.share(
-                          ShareParams(text: _link),
-                        ),
+                        onPressed: () async {
+                          if (!await shareOrCopy(_link) && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Tautan profil disalin.'),
+                              ),
+                            );
+                          }
+                        },
                         icon: const Icon(Icons.share_outlined, size: 18),
                         label: const Text('Bagikan Profil Ini'),
+                      ),
+                    ],
+                    if (kIsWeb &&
+                        widget.store.signedIn &&
+                        !Navigator.of(context).canPop()) ...[
+                      const SizedBox(height: 8),
+                      TextButton.icon(
+                        onPressed: () => launchUrl(
+                          Uri.parse('${Uri.base.origin}/'),
+                          webOnlyWindowName: '_self',
+                        ),
+                        icon: const Icon(Icons.dashboard_outlined, size: 18),
+                        label: const Text('Buka Dashboard Saya'),
                       ),
                     ],
                     const SizedBox(height: 24),

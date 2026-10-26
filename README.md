@@ -1,6 +1,6 @@
 # SmartLink Business Card
 
-Aplikasi tugas kuliah untuk kartu nama digital dan relasi profesional. Android memakai Flutter; profil publik dan dashboard admin memakai Flutter Web dari kode yang sama. Data disimpan di Supabase. Alur dan cakupan lengkap ada di [PRD.md](PRD.md).
+Aplikasi tugas kuliah untuk kartu nama digital dan relasi profesional. Android memakai Flutter; dashboard pengguna, profil publik, dan dashboard admin memakai Flutter Web dari kode yang sama. Data disimpan di Supabase. Alur dan cakupan lengkap ada di [PRD.md](PRD.md).
 
 ## Versi yang dipakai
 
@@ -34,6 +34,7 @@ Paket Flutter utama (versi terkunci di `pubspec.lock`):
 | `intl` | 0.20.3 | Format tanggal |
 | `app_links` | 6.4.1 | Deep link `smartcard://save/<token>` |
 | `gal` | 2.3.3 | Menyimpan gambar QR ke galeri |
+| `web` | 1.1.1 | Mengunduh gambar QR di browser |
 
 Backend memakai Supabase (Postgres + Auth + Storage) dan Edge Function berbasis Deno dengan `@supabase/supabase-js@2`.
 
@@ -105,7 +106,7 @@ Perintah di bawah ditulis satu baris agar bisa langsung ditempel di Terminal Mac
    flutter run -d ID_PERANGKAT_ANDROID --dart-define=PUBLIC_BASE_URL=https://smart-business-card.netlify.app
    ```
 
-4. Atau jalankan versi web di Chrome untuk mencoba profil publik dan dashboard admin:
+4. Atau jalankan versi web di Chrome. Alamat `/` membuka login/daftar pengguna, `/admin` membuka dashboard admin, dan `/p/<token>` membuka profil publik:
 
    ```sh
    flutter run -d chrome --dart-define=PUBLIC_BASE_URL=https://smart-business-card.netlify.app
@@ -133,7 +134,7 @@ Situs dihosting di Netlify. Untuk memperbarui situs yang sudah ada, buka [app.ne
 npx netlify-cli deploy --prod --dir build/web
 ```
 
-Berkas `web/_redirects` memastikan alamat `/p/<token>` dan `/admin` diarahkan ke Flutter Web. Alamat root juga membuka login admin. Jika alamat situs berubah, pakai alamat baru itu sebagai `PUBLIC_BASE_URL` lalu build ulang Android serta Web. Setelah deploy, muat ulang browser dengan Ctrl+Shift+R agar versi lama dari cache tidak tampil.
+Berkas `web/_redirects` memastikan alamat `/p/<token>` dan `/admin` diarahkan ke Flutter Web. Alamat root membuka login dan pendaftaran pengguna; akun admin yang masuk dari sana langsung diarahkan ke dashboard admin. Jika alamat situs berubah, pakai alamat baru itu sebagai `PUBLIC_BASE_URL` lalu build ulang Android serta Web. Setelah deploy, muat ulang browser dengan Ctrl+Shift+R agar versi lama dari cache tidak tampil.
 
 ## Catatan penggunaan
 
